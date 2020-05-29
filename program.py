@@ -16,31 +16,32 @@ def make_request(user_id, fields):
     info_token = '&access_token=' + TOKEN
     version = '&v=' + VERSION
     data = URL + METHOD_NAME + options + info_id + info_token + info_token + version
-    print(data)
     answer = urllib.request.urlopen(data)
     return json.load(answer)
 
 
 def main(id):
-    addr = 'https://api.vk.com/method/users.get?user_id=10042554&access_token=b673fdc130c04660888ea12287e13506fd820711215baff35ff5890bed2ada8808db8285df6c5e8dbffeb&v=5.74'
-    addr2 = 'https://api.vk.com/method/friends.get?&order=name&fields=first_name,last_name,online&user_id=10042554&access_token=b673fdc130c04660888ea12287e13506fd820711215baff35ff5890bed2ada8808db8285df6c5e8dbffeb&v=5.107'
+    try:
+        answer = make_request(id, ["first_name", "last_name"])
+    except Exception as e:
+        print("An error occurred when making the request")
+        print(e)
+    if 'error' in answer:
+        print("An unexpected error occurred")
+        return
 
-    a = urllib.request.urlopen(addr2)
-    print(a)
-    result = json.load(a)
-    print(result['response']['count'])
-    i = 0
-    for p in result['response']['items']:
-        print(p)
-        i += 1
-    print(i)
-
-    answer = make_request(id, ["first_name", "last_name"])
     data = answer['response']
-    count = answer['count']
+    count = data['count']
     people = data['items']
 
-    print(answer)
+    print(str(count) + " friends were found")
+    header = '{0:<8}{1:^40}{2:<10}'.format("Number", "Name", "ID")
+    print(header)
+    for i in range(count):
+        user = people[i]
+        if user['first_name'] != 'DELETED':
+            row = "{0:<8}{1:^40}{2:<10}".format(i + 1, user['first_name'] + " " + user['last_name'], user['id'])
+            print(row)
 
 
 if __name__ == '__main__':
